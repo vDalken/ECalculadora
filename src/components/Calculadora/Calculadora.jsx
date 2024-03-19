@@ -17,49 +17,65 @@ const reducer = (state, action) => {
     case 'second-operand':
       return { ...state, secondOperand: action.value }
     case '+':
-    case '-':
-    case '/':
-    case '*':
       return {
         ...state,
         result: Number(firstOperand) + Number(secondOperand)
       }
+    case '-':
+      return {
+        ...state,
+        result: Number(firstOperand) - Number(secondOperand)
+      }
+    case '/':
+      return {
+        ...state,
+        result: Number(firstOperand) / Number(secondOperand)
+      }
+    case '*':
+      return {
+        ...state,
+        result: Number(firstOperand) * Number(secondOperand)
+      }
     case 'option':
       return { ...state, operator: action.value }
     case 'decimal':
+      return {
+        ...state,
+        firstOperand: calculateTo(firstOperand, 'decimal'),
+        secondOperand: calculateTo(secondOperand, 'decimal'),
+        result: calculateTo(state.result, 'decimal'),
+        total: 'decimal'
+      }
     case 'hexadecimal':
+      return {
+        ...state,
+        firstOperand: calculateTo(firstOperand, 'hexadecimal'),
+        secondOperand: calculateTo(secondOperand, 'hexadecimal'),
+        result: calculateTo(state.result, 'hexadecimal'),
+        total: 'hexadecimal'
+      }
     case 'binary':
       return {
         ...state,
-        ...convertToBase(state, action.type)
+        firstOperand: calculateTo(firstOperand, 'binary'),
+        secondOperand: calculateTo(secondOperand, 'binary'),
+        result: calculateTo(state.result, 'binary'),
+        total: 'binary'
       }
-    default:
-      return state
-  }
-}
-
-const convertToBase = (state, total) => {
-  const { firstOperand, secondOperand, result } = state
-  return {
-    firstOperand: calculateTo(firstOperand, total),
-    secondOperand: calculateTo(secondOperand, total),
-    result: calculateTo(result, total),
-    total: total
   }
 }
 
 const calculateTo = (value, total) => {
   switch (total) {
     case 'decimal':
-      return isNaN(Number(value)) ? parseInt(value, 16) : Number(value)
+      return isNaN(Number(value)) ? parseInt(value, 16) : Number(value);
     case 'binary':
-      return isNaN(Number(value).toString(2))
-        ? parseInt(value, 16).toString(2)
-        : Number(value).toString(2)
+      return isNaN(Number(value).toString(2)) ? parseInt(value, 16).toString(2) : Number(value).toString(2);
     case 'hexadecimal':
-      return Number(value).toString(16)
+      return Number(value).toString(16);
   }
 }
+
 
 const Calculadora = () => {
   const [state, dispatch] = useReducer(reducer, initialState)
@@ -103,7 +119,7 @@ const Calculadora = () => {
         onChange={(event) => handleOperandChange(event, 'second-operand')}
         value={state.secondOperand}
       />
-      <input type="text" disabled value={state.result} />
+      <input type="text" disabled value={isNaN(state.result) ? "" : state.result} />
       <button onClick={handleClick}>enter</button>
       <button onClick={() => handleConversionClick('decimal')}>decimal</button>
       <button onClick={() => handleConversionClick('hexadecimal')}>
