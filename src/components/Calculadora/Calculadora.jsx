@@ -9,72 +9,53 @@ const initialState = {
 }
 
 const reducer = (state, action) => {
-  const firstOperand = state.firstOperand
-  const secondOperand = state.secondOperand
+  const { firstOperand, secondOperand } = state
+
   switch (action.type) {
     case 'first-operand':
       return { ...state, firstOperand: action.value }
     case 'second-operand':
       return { ...state, secondOperand: action.value }
     case '+':
+    case '-':
+    case '/':
+    case '*':
       return {
         ...state,
         result: Number(firstOperand) + Number(secondOperand)
       }
-    case '-':
-      return {
-        ...state,
-        result: Number(firstOperand) - Number(secondOperand)
-      }
-    case '/':
-      return {
-        ...state,
-        result: Number(firstOperand) / Number(secondOperand)
-      }
-    case '*':
-      return {
-        ...state,
-        result: Number(firstOperand) * Number(secondOperand)
-      }
     case 'option':
       return { ...state, operator: action.value }
     case 'decimal':
-      return {
-        ...state,
-        firstOperand: calculateTo(firstOperand, 'decimal'),
-        secondOperand: calculateTo(secondOperand, 'decimal'),
-        result: calculateTo(state.result, 'decimal'),
-        total: 'decimal'
-      }
     case 'hexadecimal':
-      return {
-        ...state,
-        firstOperand: calculateTo(firstOperand, 'hexadecimal'),
-        secondOperand: calculateTo(secondOperand, 'hexadecimal'),
-        result: calculateTo(state.result, 'hexadecimal'),
-        total: 'hexadecimal'
-      }
     case 'binary':
       return {
         ...state,
-        firstOperand: calculateTo(firstOperand, 'binary'),
-        secondOperand: calculateTo(secondOperand, 'binary'),
-        result: calculateTo(state.result, 'binary'),
-        total: 'binary'
+        ...convertToBase(state, action.type)
       }
+    default:
+      return state
+  }
+}
+
+const convertToBase = (state, total) => {
+  const { firstOperand, secondOperand, result } = state
+  return {
+    firstOperand: calculateTo(firstOperand, total),
+    secondOperand: calculateTo(secondOperand, total),
+    result: calculateTo(result, total),
+    total: total
   }
 }
 
 const calculateTo = (value, total) => {
   switch (total) {
     case 'decimal':
-      return Number(value)
+      return isNaN(Number(value)) ? parseInt(value, 16) : Number(value)
     case 'binary':
-      const convertedBinaryValue = Number(value).toString(2)
-      if(isNaN(convertedBinaryValue)){
-        return value
-      }
-      return convertedBinaryValue
+      return isNaN(Number(value).toString(2))
+        ? parseInt(value, 16).toString(2)
+        : Number(value).toString(2)
     case 'hexadecimal':
       return Number(value).toString(16)
   }
@@ -83,18 +64,11 @@ const calculateTo = (value, total) => {
 const Calculadora = () => {
   const [state, dispatch] = useReducer(reducer, initialState)
 
-  const handleSecondOperandChange = (event) => {
+  const handleOperandChange = (event, operandType) => {
     const value = event.target.value
 
     if (!isNaN(value)) {
-      dispatch({ type: 'second-operand', value: event.target.value })
-    }
-  }
-
-  const handleFirstOperandChange = (event) => {
-    const value = event.target.value
-    if (!isNaN(value)) {
-      dispatch({ type: 'first-operand', value: event.target.value })
+      dispatch({ type: operandType, value: event.target.value })
     }
   }
 
@@ -106,16 +80,8 @@ const Calculadora = () => {
     dispatch({ type: 'option', value: event.target.value })
   }
 
-  const handleDecimalClick = () => {
-    dispatch({ type: 'decimal' })
-  }
-
-  const handleHexadecimalClick = () => {
-    dispatch({ type: 'hexadecimal' })
-  }
-
-  const handleBinaryClick = () => {
-    dispatch({ type: 'binary' })
+  const handleConversionClick = (type) => {
+    dispatch({ type: type })
   }
 
   return (
@@ -123,7 +89,7 @@ const Calculadora = () => {
       <h1>Write only numbers for the operation to be successful</h1>
       <input
         type="text"
-        onChange={handleFirstOperandChange}
+        onChange={(event) => handleOperandChange(event, 'first-operand')}
         value={state.firstOperand}
       />
       <select onChange={handleSelectChange}>
@@ -134,14 +100,16 @@ const Calculadora = () => {
       </select>
       <input
         type="text"
-        onChange={handleSecondOperandChange}
+        onChange={(event) => handleOperandChange(event, 'second-operand')}
         value={state.secondOperand}
       />
       <input type="text" disabled value={state.result} />
       <button onClick={handleClick}>enter</button>
-      <button onClick={handleDecimalClick}>decimal</button>
-      <button onClick={handleHexadecimalClick}>hexadecimal</button>
-      <button onClick={handleBinaryClick}>binario</button>
+      <button onClick={() => handleConversionClick('decimal')}>decimal</button>
+      <button onClick={() => handleConversionClick('hexadecimal')}>
+        hexadecimal
+      </button>
+      <button onClick={() => handleConversionClick('binary')}>binary</button>
     </>
   )
 }
