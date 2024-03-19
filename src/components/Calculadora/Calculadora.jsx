@@ -70,7 +70,11 @@ const calculateTo = (value, total) => {
     case 'decimal':
       return Number(value)
     case 'binary':
-      return Number(value).toString(2)
+      const convertedBinaryValue = Number(value).toString(2)
+      if(isNaN(convertedBinaryValue)){
+        return value
+      }
+      return convertedBinaryValue
     case 'hexadecimal':
       return Number(value).toString(16)
   }
