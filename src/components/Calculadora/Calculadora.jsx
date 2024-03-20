@@ -119,7 +119,7 @@ const Calculadora = () => {
         onChange={(event) => handleOperandChange(event, 'second-operand')}
         value={state.secondOperand}
       />
-      <input type="text" disabled value={isNaN(state.result) ? "" : state.result} />
+      <input type="text" disabled value={isNaN(state.result) ? (parseInt(state.firstOperand, 16)+ parseInt(state.secondOperand, 16)).toString(16) : state.result} />
       <button onClick={handleClick}>enter</button>
       <button onClick={() => handleConversionClick('decimal')}>decimal</button>
       <button onClick={() => handleConversionClick('hexadecimal')}>
